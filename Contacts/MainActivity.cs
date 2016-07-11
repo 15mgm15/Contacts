@@ -23,7 +23,7 @@ namespace Contacts
         Dialog _dialog;
         bool _IsContactNew;
         Contact _contactSelected;
-        ListAdapter _listAdapter;
+        public static ListAdapter ListAdapter;
 
         #region Contructor
 
@@ -41,8 +41,8 @@ namespace Contacts
             LoadList();
             _listView = FindViewById<ListView>(Resource.Id.List);
 
-            _listAdapter = new ListAdapter(this, ContactList);
-            _listView.Adapter = _listAdapter;
+            ListAdapter = new ListAdapter(this, ContactList);
+            _listView.Adapter = ListAdapter;
             _listView.ItemClick += OnListItemClick;
 
         }
@@ -128,7 +128,7 @@ namespace Contacts
             {
                 //Add new Contact
                 ContactList.Add(new Contact() { Name = name.Text, LastName = lastName.Text, Phone = phone.Text, Email = email.Text });
-                _listAdapter.NotifyDataSetChanged();
+                ListAdapter.NotifyDataSetChanged();
             }
             else
             {
@@ -174,10 +174,10 @@ namespace Contacts
             if (string.IsNullOrEmpty(name))
             {
                 return 1;
-            } else if (!IsEmailValid(email))
+            } else if (!IsEmailValid(email) && !string.IsNullOrEmpty(email))
             {
                 return 2;
-            }else if (IsPhoneValid(phone))
+            }else if (IsPhoneValid(phone) && !string.IsNullOrEmpty(phone))
             {
                 return 3;
             }

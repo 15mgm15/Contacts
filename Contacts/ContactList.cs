@@ -72,8 +72,6 @@ namespace Contacts
         {
             var listView = sender as ListView;
             _contactSelected = _contactsList[e.Position];
-
-            Console.WriteLine(_contactSelected);
             CreateDialog();
             _dialog.Show();
 
@@ -130,6 +128,7 @@ namespace Contacts
             }
 
             MainActivity.ContactList.Add(new Contact() { Name = name.Text, LastName = lastName.Text, Phone = phone.Text, Email = email.Text });
+            MainActivity.ListAdapter?.NotifyDataSetChanged();
             _dialog.Dismiss();
             Finish();
         }
