@@ -3,5 +3,6 @@ Xamarin.Android Get Phone Contacts Example.
 
 With QR Code feature!
 
-![alt tag](https://media.giphy.com/media/cOW8BSRJJTLHy/giphy_s.gif)
+![alt tag](https://media.giphy.com/media//cOW8BSRJJTLHy/giphy.gif)
+
 
