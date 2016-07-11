@@ -136,7 +136,7 @@ namespace Contacts
 
         public static int ValidateData(string name, string lastName, string phone, string email)
         {
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(lastName))
+            if (string.IsNullOrEmpty(name))
             {
                 return 1;
             }
