@@ -11,4 +11,9 @@
        android:icon="@drawable/contacts"
        local:showAsAction="ifRoom"
        android:title="Add From Contacts" />
+  <item
+       android:id="@+id/menu_qr"
+       android:icon="@drawable/qrcode"
+       local:showAsAction="ifRoom"
+       android:title="Scan" />
 </menu>

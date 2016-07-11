@@ -47,5 +47,10 @@ namespace Contacts
             view.FindViewById<TextView>(Resource.Id.Image).Text = item.Initials;
             return view;
         }
+
+        //public override void NotifyDataSetChanged()
+        //{
+        //    base.NotifyDataSetChanged();
+        //}
     }
 }

@@ -10,7 +10,6 @@ using Contacts.Models;
 using Android.Content.PM;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Android.Provider;
 
 namespace Contacts
 {
@@ -24,6 +23,7 @@ namespace Contacts
         Dialog _dialog;
         bool _IsContactNew;
         Contact _contactSelected;
+        ListAdapter _listAdapter;
 
         #region Contructor
 
@@ -40,7 +40,9 @@ namespace Contacts
             //List Set-Up
             LoadList();
             _listView = FindViewById<ListView>(Resource.Id.List);
-            _listView.Adapter = new ListAdapter(this, ContactList);
+
+            _listAdapter = new ListAdapter(this, ContactList);
+            _listView.Adapter = _listAdapter;
             _listView.ItemClick += OnListItemClick;
 
         }
@@ -63,6 +65,17 @@ namespace Contacts
                 case Resource.Id.menu_contacts:
                     AddContactFromPhone();
                     break;
+                case Resource.Id.menu_qr:
+                    var scanner = new ZXing.Mobile.MobileBarcodeScanner();
+                    RunOnUiThread(async () =>
+                    {
+                        var result = await scanner.Scan();
+                        if (!string.IsNullOrEmpty(result?.Text))
+                        {
+                            SetUpAndShowAlert(result.Text);
+                        }
+                    });
+                    break;
                 default:
                     break;
             }
@@ -79,25 +92,11 @@ namespace Contacts
             _contactSelected = ContactList[e.Position];
             _IsContactNew = false;
 
-            CreateDialog();
-
-            //Manual Bindings...
-            TextView initials = (TextView)_dialog.FindViewById(Resource.Id.initialsDialog);
-            initials.Text = _contactSelected.Initials;
-            EditText name = (EditText)_dialog.FindViewById(Resource.Id.firstNameTxt);
-            name.Text = _contactSelected.Name;
-            EditText lastName = (EditText)_dialog.FindViewById(Resource.Id.lastNameTxt);
-            lastName.Text = _contactSelected.LastName;
-            EditText phone = (EditText)_dialog.FindViewById(Resource.Id.phoneNumberTxt);
-            phone.Text = _contactSelected.Phone;
-            EditText email = (EditText)_dialog.FindViewById(Resource.Id.emailTxt);
-            email.Text = _contactSelected.Email;
-
-            _dialog.Show();
+            SetUpAndShowAlert();
 
         }
 
-        private void DismissButton_Click(object sender, EventArgs e)
+        private void DoneButton_Click(object sender, EventArgs e)
         {
             EditText name = (EditText)_dialog.FindViewById(Resource.Id.firstNameTxt);
             EditText lastName = (EditText)_dialog.FindViewById(Resource.Id.lastNameTxt);
@@ -129,6 +128,7 @@ namespace Contacts
             {
                 //Add new Contact
                 ContactList.Add(new Contact() { Name = name.Text, LastName = lastName.Text, Phone = phone.Text, Email = email.Text });
+                _listAdapter.NotifyDataSetChanged();
             }
             else
             {
@@ -165,13 +165,13 @@ namespace Contacts
             _dialog.RequestWindowFeature((int)WindowFeatures.NoTitle);
             _dialog.SetContentView(Resource.Layout.custom_dialog_layout);
             Button dismissButton = (Button)_dialog.FindViewById(Resource.Id.dialog_button);
-            dismissButton.Click += DismissButton_Click;
+            dismissButton.Click += DoneButton_Click;
         }
 
         public static int ValidateData(string name, string lastName, string phone, string email)
         {
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(lastName) 
-                || string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(email))
+            // || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(email)
+            if (string.IsNullOrEmpty(name))
             {
                 return 1;
             } else if (!IsEmailValid(email))
@@ -208,6 +208,67 @@ namespace Contacts
             ContactList.Add(new Contact() { Id = 5, Name = "Hank", LastName = "Scorpio", Phone = "(733) 584-7015", Email = "hankscs@gmail.com" });
             ContactList.Add(new Contact() { Id = 6, Name = "Anna", LastName = "Frank", Phone = "(555) 986-3924", Email = "anniefrankm@gmail.com" });
 
+        }
+
+        void SetUpAndShowAlert(string contact = null)
+        {
+            CreateDialog();
+
+            TextView initials = (TextView)_dialog.FindViewById(Resource.Id.initialsDialog);
+            EditText name = (EditText)_dialog.FindViewById(Resource.Id.firstNameTxt);
+            EditText lastName = (EditText)_dialog.FindViewById(Resource.Id.lastNameTxt);
+            EditText phone = (EditText)_dialog.FindViewById(Resource.Id.phoneNumberTxt);
+            EditText email = (EditText)_dialog.FindViewById(Resource.Id.emailTxt);
+
+            if (_contactSelected == null)
+            {
+
+                try
+                {
+                    var separatedContact = contact.Split(' ');
+                    switch (separatedContact.Length)
+                    {
+                        case 1:
+                            name.Text = separatedContact[0];
+                            break;
+                        case 2:
+                            name.Text = separatedContact[0];
+                            lastName.Text = separatedContact[1];
+                            break;
+                        case 3:
+                            name.Text = separatedContact[0];
+                            lastName.Text = separatedContact[1];
+                            phone.Text = separatedContact[2];
+                            break;
+                        case 4:
+                            name.Text = separatedContact[0];
+                            lastName.Text = separatedContact[1];
+                            phone.Text = separatedContact[2];
+                            email.Text = separatedContact[3];
+                            break;
+                        default:
+                            Toast.MakeText(this, "Invalid QR Code!", ToastLength.Short).Show();
+                            return;
+                    }
+
+                    _IsContactNew = true;
+
+                }
+                catch
+                {
+                    Toast.MakeText(this, "Invalid QR Code!", ToastLength.Short).Show();
+                }
+            }
+            else
+            {
+                initials.Text = _contactSelected.Initials;
+                name.Text = _contactSelected.Name;
+                lastName.Text = _contactSelected.LastName;
+                phone.Text = _contactSelected.Phone;
+                email.Text = _contactSelected.Email;
+            }
+
+            _dialog.Show();
         }
 
         #endregion
